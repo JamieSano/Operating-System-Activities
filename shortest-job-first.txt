@@ -1,0 +1,59 @@
+import java.util.*;
+public class shortest_job_first_sched {
+   public static void main(String args[]){
+       Scanner sc = new Scanner(System.in);
+       System.out.println("Enter no. of Process: ");
+       int n = sc.nextInt();
+       int process_id[]= new int[n];
+       int arrival_time[]= new int[n];
+       int burst_time[]= new int[n];
+       int completion_time[]=new int[n];
+       int ta[]= new int[n];
+       int wt[] = new int[n];
+
+       int f[]= new int[n]; // flag
+
+       int st=0, tot=0;
+       float AveWT=0, AveTA=0;
+
+       for(int i=0; i<n; i++){
+         process_id[i] = i+1;
+         System.out.println("Enter Process "+(i+1)+"\nArrival Time:");
+         arrival_time[i] = sc.nextInt();
+         System.out.println("Burst Time:");
+           burst_time[i] = sc.nextInt();
+         f[i]=0;
+       }
+       boolean a = true;
+       while(true){
+           int c = n, min = 999;
+           if(tot == n) // total no of process = completed process
+               break;
+           for(int i=0; i<n; i++){
+               if((arrival_time[i]<=st)&&(f[i]==0)&&(burst_time[i])<min){
+                 min = burst_time[i];
+                 c=i;
+               }
+           }
+           if(c==n)
+               st++;
+           else{
+               completion_time[c]=st+burst_time[c];
+               st+=burst_time[c];
+               ta[c]= completion_time[c] - arrival_time[c];
+               wt[c]= ta[c]-burst_time[c];
+               f[c]=1;
+               tot++;
+           }
+       }
+       System.out.println("\nProcess\t Arrival\tBurst\tComplete\tTurn\tWait");
+       for(int i=0; i<n; i++) {
+           AveWT += wt[i];
+           AveTA += ta[i];
+           System.out.println("\t"+process_id[i] + "\t\t" + arrival_time[i] + "\t\t" + burst_time[i] + "\t\t" + completion_time[i] + "\t\t" + ta[i] +"\t\t"+ wt[i]);
+       }
+       System.out.println("\n System Throughput: "+st);
+       System.out.println("\n Average Turn Around Time: "+(float)(AveTA/n));
+       System.out.println("\n Average Waiting Time: "+(float)(AveWT/n));
+       }
+}
