@@ -1,0 +1,149 @@
+package CPU_Scheduling;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Scanner;
+
+class Process  {
+	private int process_id;
+	private int arrival_time;
+	private int burst_time;
+	private int priority;
+	private int completion_time;
+	
+	private int rem_burst_time;
+	private int waiting_time;
+	private int turnaround_time;
+	private boolean isComplete;
+	private boolean inQueue;
+	
+	Process(){
+		process_id = 0;
+		arrival_time = 0;
+		burst_time = 0;
+		priority = 0;
+		completion_time = 0;
+		
+		waiting_time = 0;
+		turnaround_time = 0;
+		isComplete = false;
+		inQueue = false;
+		
+	}
+	
+	// function that enqueue (in readyQueue) the processes based on their arrival time
+	public void enqueue_AT (ArrayList<Process> pr, int timer, Queue<Process> readyQueue) {
+		for (int i = 0; i < pr.size(); i++) {
+			if (pr.get(i).arrival_time <= timer && !pr.get(i).inQueue && !pr.get(i).isComplete) {
+				pr.get(i).inQueue = true;
+				readyQueue.add(pr.get(i));
+			}
+		}
+	}
+	
+	public void round_robin_sched(ArrayList<Process> pr, int time_quantum) {
+		Scanner scan = new Scanner(System.in);
+		int numOfProcess = pr.size();
+		int countExecuted = 0; 
+		int timer = 0;
+		
+		Queue<Process> readyQueue = new LinkedList<>();
+		
+		for (int i = 0; i < numOfProcess; i++) {
+			 pr.get(i).process_id = i+1;
+			 System.out.print("\nPROCESS #" + (i+1));
+			 
+			 System.out.print("\n\tArrival Time: ");
+			 pr.get(i).arrival_time = scan.nextInt();
+			 
+			 System.out.print("\tBurst Time: ");
+			 pr.get(i).burst_time = scan.nextInt();
+			 pr.get(i).rem_burst_time = pr.get(i).burst_time; 		 
+		}
+		
+		enqueue_AT(pr, timer, readyQueue);
+		
+		while (!readyQueue.isEmpty()) {
+			Process current_process = readyQueue.poll();
+			if (current_process.rem_burst_time <= time_quantum) {
+				current_process.isComplete = true;
+				timer += current_process.rem_burst_time;
+				current_process.completion_time = timer;
+				current_process.waiting_time = current_process.completion_time - current_process.arrival_time - current_process.burst_time;
+				current_process.turnaround_time = current_process.waiting_time + current_process.burst_time; 
+				
+				if (current_process.waiting_time < 0) {
+					current_process.waiting_time = 0;
+					
+				}
+				countExecuted++;
+				
+				if (countExecuted != numOfProcess) {
+					enqueue_AT(pr, timer, readyQueue);
+				}
+			} 
+			else {
+				current_process.rem_burst_time -= time_quantum;
+				timer += time_quantum;
+				
+				if (countExecuted != numOfProcess) {
+					enqueue_AT(pr, timer, readyQueue);
+				}
+				readyQueue.add(current_process);
+			}
+		}
+		
+	}
+	
+	public void shortest_job_first_sched(Process pr[]) {
+		
+	}
+	
+	public void preemptive_priority_sched(Process pr[]) {
+		
+	}
+	
+	public void displayTable(ArrayList<Process> pr) {
+        System.out.println("\n------------------------------------------------------------------------");
+        System.out.println("| Process | Arrival Time | Burst Time | Waiting Time | Turnaround Time |");
+        System.out.println("------------------------------------------------------------------------");
+
+        int aveWT = 0;
+        int aveTA = 0;
+        
+        for (Process process : pr) {
+            System.out.printf("|   P%-3d  |      %-6d  |     %-6d |     %-8d |     %-11d |\n",
+                    process.process_id, process.arrival_time, process.burst_time, process.waiting_time, process.turnaround_time);
+            aveWT += process.waiting_time;
+            aveTA += process.turnaround_time;
+        }
+        System.out.println("------------------------------------------------------------------------");
+        
+        System.out.printf("\tAverage Waiting Time    : %.2f\n", (float) aveTA/pr.size());
+        System.out.printf("\tAverage Turnaround Time : %.2f\n", (float) aveWT/pr.size());
+	}
+}
+
+
+public class Main {
+	
+	public static void main(String[] args) {
+		Scanner scan = new Scanner(System.in);
+		Process proc = new Process();
+		ArrayList<Process> pr = new ArrayList<>();;
+		
+		System.out.println("\tROUND ROBIN SCHEDULING");
+		System.out.print("\nNo. of Processes: ");
+		int numOfProcess = scan.nextInt();
+		
+		System.out.print("Quantum Time: ");
+		int qt = scan.nextInt();
+		
+		for (int i = 0; i < numOfProcess; i++) {
+			pr.add(new Process());
+		}
+		proc.round_robin_sched(pr, qt);
+		proc.displayTable(pr);
+	}
+}
