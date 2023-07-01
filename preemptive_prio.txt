@@ -1,0 +1,88 @@
+import java.util.Scanner;
+
+public class preemptive_priority {
+    static final int MIN = -9999;
+
+    static class Process {
+        int process_id, arrival_time, burst_time, priority, completion_time, wt, ta, rt, temp;
+    }
+
+    static Process read(int i) {
+        Scanner scanner = new Scanner(System.in);
+        Process p = new Process();
+        System.out.println("\nProcess No: " + i);
+        p.process_id = i;
+        System.out.print("Enter Arrival Time: ");
+        p.arrival_time = scanner.nextInt();
+        System.out.print("Enter Burst Time: ");
+        p.burst_time = scanner.nextInt();
+        p.rt = p.burst_time;
+        System.out.print("Enter Priority: ");
+        p.priority = scanner.nextInt();
+        return p;
+    }
+
+    public static void main(String[] args) {
+        int i, n, c, remaining, max_val, max_index;
+        Process[] p = new Process[10];
+        float total_tat = 0, total_wt = 0;
+
+        System.out.println("<--Highest Priority First Scheduling Algorithm (Preemptive)-->");
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter Number of Processes: ");
+        n = scanner.nextInt();
+
+        for (i = 0; i < n; i++)
+            p[i] = read(i + 1);
+
+        remaining = n;
+        for (i = 0; i < n - 1; i++)
+            for (int j = 0; j < n - i - 1; j++)
+                if (p[j].arrival_time > p[j + 1].arrival_time) {
+                    Process temp = p[j];
+                    p[j] = p[j + 1];
+                    p[j + 1] = temp;
+                }
+
+        c = 0;
+        while (remaining > 0) {
+            max_val = MIN;
+            max_index = -1;
+            for (i = 0; i < n; i++) {
+                if (p[i].arrival_time <= c && p[i].temp > max_val) {
+                    max_val = p[i].temp;
+                    max_index = i;
+                }
+            }
+
+            if (max_index == -1) {
+                c++;
+                continue;
+            }
+
+            i = max_index;
+            p[i].completion_time = c = c + 1;
+            p[i].rt--;
+
+            if (p[i].rt == 0) {
+                p[i].temp = MIN;
+                remaining--;
+            }
+        }
+
+        System.out.println("\nProcess\t Arrival\tBurst\tComplete\tTurn\tWait");
+        for (i = 0; i < n; i++) {
+            p[i].ta = p[i].completion_time - p[i].arrival_time;
+            total_tat += p[i].ta;
+            p[i].wt = p[i].ta - p[i].burst_time;
+            total_wt += p[i].wt;
+            System.out.printf("P%d\t\t\t%d\t\t%d\t\t%d\t\t\t%d\t\t%d\n", p[i].process_id, p[i].arrival_time, p[i].burst_time, p[i].completion_time,
+                    p[i].ta, p[i].wt);
+        }
+
+        float AveWT = total_wt / n;
+        float AveTA = total_tat / n;
+
+        System.out.printf("\nAverage Turnaround Time = %.3f\nAverage Waiting Time = %.3f\n", AveTA, AveWT);
+    }
+}
